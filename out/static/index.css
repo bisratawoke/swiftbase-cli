@@ -1,0 +1,19 @@
+.header {
+
+	font-family:  sans-serif  serif;
+	
+	color: white;
+	
+	background-color: red;
+	
+	font-weight: bold;
+	
+	 
+}
+
+.header:hover{
+
+	color:white;
+	
+	background-color: green;
+}

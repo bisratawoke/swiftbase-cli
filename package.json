@@ -5,10 +5,10 @@
   "main": "index.js",
   "bin": {
     "swiftbase": "./bin/cli.js",
-    "make":"./bin/make.js"
+    "postinstall":"./bin/postinstall.js"
   },
   "scripts": {
-  	"postinstall":"make"
+  	"postinstall":"postinstall"
   },
   "keywords": [],
   "author": "",

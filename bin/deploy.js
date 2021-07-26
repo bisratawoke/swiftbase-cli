@@ -8,13 +8,14 @@ const FormData = require('form-data')
 
 const files = new FormData()
 
-const {httpsAgent,host,final} = require('./config')
+const {httpsAgent,host,final,depl} = require('./config')
 
 let formData = new FormData()
 
 let domain_name = null
 
 let count = 0
+
 
 // check to see if your have activated hosting service
 
@@ -24,8 +25,6 @@ function isHostActive(){
 	
 		try{
 			
-			//request options
-			
 			const opt = {
 			
 				headers:{'authorization':`token ${userInfo.token}`},
@@ -34,7 +33,7 @@ function isHostActive(){
 				
 			}
 			
-			const response = await fetch(`${final.deployHost}/project/static_deploy/isActive?proj_pub_id=${userInfo.proj_pub_id}`,opt)
+			const response = await fetch(`${depl}/api/project/service/frontend/isActive?proj_pub_id=${userInfo.proj_pub_id}`,opt)
 			
 			
 			if(response.status == 404) {
@@ -43,7 +42,7 @@ function isHostActive(){
 				
 					type:0,
 					
-					message:' you have not activated hosting service \n head onto our website and activate it https://baker.com'
+					message:' you have not activated hosting service \n head onto our website and activate it https://swiftbase.com'
 				})
 			}
 			
@@ -51,12 +50,18 @@ function isHostActive(){
 				
 				const info = await response.json()
 				
-				console.log(` this is info ${JSON.stringify(info)}`)
+				console.log(` [isHostActive] ${JSON.stringify(info)}`)
+				
 				resolve(info)
 			
 			}
 			
-			else reject({type:1,message:'UNKNOWN ERROR'})
+			else {
+				const mssg = await response.json();
+					
+				reject({type:1,message:mssg});
+				
+			}
 	
 		}
 		catch(err) {
@@ -115,7 +120,7 @@ const checkDomainName = () => {
 
 const upload = async(dir) => {
 	
-	
+	//here
 	console.log(dir)
 	try{
 	
@@ -123,11 +128,21 @@ const upload = async(dir) => {
 		
 		count = count +1
 		
-		if(count == 1 && result.length < 1) throw 'empty folders cant be uploaded'
+		if(count == 1 && result.length < 1) throw {
+			
+			errno: 1,
+			
+			message: 'empty folders cant be uploaded'
+			
+		}
 		
 		result.forEach((x) => {
+			if(x != 'node_modules') {
 			
-			upload(`${dir}/${x}`)
+				upload(`${dir}/${x}`)
+			
+			}
+			else console.log('node module')
 		
 		})
 		
@@ -136,12 +151,12 @@ const upload = async(dir) => {
 	}catch(err) {
 	
 		
-		//console.log(name)
+		//not a directory
 		if(err.errno === -20){
 			
 			let name = dir.split('/')
 			
-			let stuff = name.splice(0,2)
+			let unneed = name.splice(0,2)
 		
 			name = name.join('/')
 			
@@ -155,8 +170,9 @@ const upload = async(dir) => {
 
 //send files to server
 
-const send  = async (pub_id) => {
+const send  = async (proj_pub_id,dn,type) => {
 
+	console.log('here')
 	try{
 		
 		//request option
@@ -177,16 +193,25 @@ const send  = async (pub_id) => {
 		}
 		
 		//making api call 
-		
-		const response = await fetch(`${final.nfsApi}/nfsApi/upload?pub_id=${pub_id}`,opt)
+		console.log(opt)
+		const response = await fetch(`${final.deployHost}/api/deploy/upload?proj_pub_id=${proj_pub_id}&dn=${dn}&type=${type}`,opt)
 		
 		console.log(response.status)
 		
 		if(response.status === 200) {
 		
-			console.log(' deployment was successfull')
+			console.log(' deployment was successfull');
 		}
-	
+		else if (response.status === 404) {
+		
+			console.log('service not available right now\n please try again later.');
+		}
+		else{
+			const mssg = await response.json();
+			
+			 console.log(mssg.message);
+			
+		}
 	}
 	catch(err) {
 		
@@ -205,14 +230,18 @@ function hasInit(){
 	
 		try{
 			
-			console.log(userInfo)
+			
 			if('token' in userInfo && 'proj_pub_id' in userInfo) resolve(true)
 			
-			throw 'failed to deploy \n this error was caused because havent logined in or you havent initalized a project \n please read up on the steps required to deploy with swiftbase';
+			throw {
+				
+				message:'failed to deploy \n this error was caused because havent logined in or you havent initalized a project \n please read up on the steps required to deploy with swiftbase'
+			
+			}
 		
 		}catch(err) {
 			
-			reject(err)
+			reject({message: err.message})
 		
 		}
 	
@@ -226,23 +255,29 @@ async function deploy(){
 
 	try{
 		
+		const {type,project_dir} = require('../swiftbase.config.js')
+		
 		await hasInit()
 		
 		const info = await isHostActive()
 		
-		domain_name = info.message.domain_name
-
-		formData.append('domain_name',info.message.domain_name)
 		
-		upload('./out')
+		domain_name = info.message[0].dn
+		
+
+		formData.append('domain_name',info.message[0].dn)
+		
+		upload(project_dir)
 		
 		setTimeout(() => {
 			
-			send(info.message.pub_id)
+			send(info.message[0].proj_pub_id,info.message[0].dn,type)
 			
 			console.log(formData)
 			
 		},3000)
+		
+		console.log(info)
 	
 		
 		
@@ -250,6 +285,8 @@ async function deploy(){
 	catch(err) {
 	
 		console.log(err.message)
+
+		console.log('here')
 		
 		return 0
 	}

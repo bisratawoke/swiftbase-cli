@@ -3,22 +3,18 @@
 const fs = require('fs');
 
 
-/*(() => {
-
-	console.log('we are making it!!')
-})()
-*/
 (async() => {
 	
 	try{
 		
-		console.log('make me bitch')
+		console.log('Post install hook running')
 		
 		await fs.promises.mkdir('./\.baker')
 		
+		await fs.promises.writeFile('./\.baker/\.userInfo.json',JSON.stringify({}))
+		
 		await fs.promises.mkdir('./out')
 		
-		await fs.promises.writeFile('./\.baker/\.userInfo.json',JSON.stringify({}))
 		
 	}catch(err){
 	

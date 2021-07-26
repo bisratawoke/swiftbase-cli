@@ -2,7 +2,7 @@
 const fs = require('fs')
 const fetch = require('node-fetch')
 const userInfo = require('../\.baker/\.userInfo.json')
-const {httpsAgent,host,final} = require('./config')
+const {httpsAgent,host,final,depl} = require('./config')
 
 //check to see if user has logged in
 //if a user has login in before a file containig the credentials will be found
@@ -49,9 +49,9 @@ function checkProject(){
 				
 			}
 		
-			const response = await fetch(`${final.projectHost}/project/checkProject?proj_name=${proj_name}`,opt)
+			const response = await fetch(`${depl}/api/project/checkProject?proj_name=${proj_name}`,opt)
 			
-			console.log(` this is me ${response.status}`)
+			console.log(` [check project] ${response.status}`)
 			
 			if(response.status == 200) {
 			
@@ -72,8 +72,16 @@ function checkProject(){
 					
 					await fs.promises.writeFile('./\.baker/\.userInfo.json',JSON.stringify(userInfo))
 					
-									console.log(`successfully initialized project \n please add your static files into the out directory \n `)
+				
+					//here
+					
+									console.log(`successfully initialized project \nuse switfbase deploy command to deploy your application`)
 				}
+				
+				let data = `const project_types = {\n default:'static',\n node:'nodejs', \n php:'php'\n}\nmodule.exports = {\ntype: project_types.default,\nproject_name: '${result.message.proj_name}',\n project_dir:'./out'\n}`
+				
+				
+				await fs.promises.writeFile('./swiftbase.config.js',data)
 			}
 			
 			resolve(true)
@@ -108,7 +116,7 @@ async function init(){
 	
 	if(process.argv.length < 4) {
 	
-		console.log('argument is missing \n please pass the project name \n eg baker init facebook')
+		console.log('argument is missing \nplease pass the project name \neg swiftbase init facebook')
 		
 		return 0
 	}
@@ -140,9 +148,9 @@ async function init(){
 				
 				else if(err.type == 1 ) console.log(err.mssg)
 					
-			    else if (err.type == 2) console.log(err.mssg)
+			    	else if (err.type == 2) console.log(err.mssg)
 			    
-			    else if (err.type == 3 ) console.log(err.mssg)
+			    	else if (err.type == 3 ) console.log(err.mssg)
 			    
 				return 0
 		

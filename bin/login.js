@@ -1,6 +1,6 @@
 const fetch = require('node-fetch')
 const fs = require('fs')
-const {httpsAgent,host,final} = require('./config')
+const {httpsAgent,host,final,depl} = require('./config')
 
 async function login(){	
 		
@@ -32,7 +32,7 @@ async function login(){
 				
 				
 			}
-			const response = await fetch(`${final.accountHost}/account/login`,opt)
+			const response = await fetch(`${depl}/api/account/login`,opt)
 			
 			
 			
@@ -47,7 +47,7 @@ async function login(){
 				await fs.promises.writeFile('./\.baker/\.userInfo.json',JSON.stringify({token}))
 				
 				
-				console.log('loggin succesfully \n run baker init to start \n this command take the projects names as argument')
+				console.log('loggin succesfully \n run baker init to start \n this command take the projects names as argument ')
 				
 				return 0
 			}
