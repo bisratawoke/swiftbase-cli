@@ -4,7 +4,7 @@ const project_types = {
  php:'php'
 }
 module.exports = {
-type: project_types.node,
-project_name: 'hottouch',
- project_dir:'./nodeout'
+type: project_types.php,
+project_name: 'blamegame',
+ project_dir:'./phpout'
 }

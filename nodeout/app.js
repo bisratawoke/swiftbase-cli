@@ -8,4 +8,4 @@ app.get("/",(req,res) => {
 })
 
 
-app.listen(9000,() => console.log('server started'))
+app.listen(80,() => console.log('server started'))
